@@ -61,20 +61,20 @@ proc ::server::help::sterilizeList msg {
 # forward the user command appropriately.
 #
 proc ::server::handle::user chan {
-  set msg [gets $chan]
+  set msg  [gets $chan]
   set name [::see::from $msg]
   puts "The user said: $msg"
 	if {[::see::to $msg] eq "server" } {
 		foreach key [dict keys $::clients] {
 			if {$key ne "user"} {
-				puts "SENDING:[lindex [dict get $::clients $key] 0] [list [dict replace $msg to $key]]"
+				puts "SENDING: [lindex [dict get $::clients $key] 0] [list [dict replace $msg to $key]]"
 				puts [lindex [dict get $::clients $key] 0] [dict replace $msg to $key]
 			}
 		}
 	} else {
 		set from [::see::from $msg]
 		set to [::see::to $msg]
-		puts "SENDING:[lindex [dict get $::clients $to] 0] [list $msg]"
+		puts "SENDING: [lindex [dict get $::clients $to] 0] [list $msg]"
 		puts [lindex [dict get $::clients $to] 0] $msg
 	}
 	puts "SENDING: $chan message received"

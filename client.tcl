@@ -7,6 +7,8 @@ namespace eval ::client::actions {}
 namespace eval ::client::record {}
 namespace eval ::client::find {}
 namespace eval ::client::helpers {}
+namespace eval ::client::format {}
+namespace eval ::client::die {}
 
 ############################################################################
 # Setup ####################################################################
@@ -28,15 +30,10 @@ proc ::client::set::globals {} {
 ############################################################################
 
 
-proc ::client::run {} {
-  set msg ""
-  set sendmsg ""
-  set introduction "from"
-  lappend introduction [::client::helpers::getMyName]
-  lappend introduction "to"
-  lappend introduction "server"
-  lappend introduction "message"
-  lappend introduction "goodmorning"
+proc ::client::run  {} {
+  set msg           {}
+  set sendmsg       {}
+  set introduction  [list from [::client::helpers::getMyName] to server message goodmorning]
   puts $::chan $introduction
 
   flush $::chan
@@ -48,6 +45,8 @@ proc ::client::run {} {
     set msg [::client::getsMsg [gets $::chan]]
     puts "received: $msg"
     set sendmsg [::client::explore $msg]
+    puts sending
+    puts $sendmsg
     ::client::sendMsg $sendmsg
   }
 }
@@ -90,14 +89,33 @@ proc ::client::explore msg {
 
 proc ::client::interpret msg {
   #return "this is where you send call other modules etc."
-  puts "from [::see::from $msg]"
-  puts "to [::see::to $msg]"
-  puts "about [::see::about $msg]"
-  puts "when [::see::when $msg]"
-  puts "command [::see::command $msg]"
-  puts "message [::see::message $msg]"
-  return [list [list from $::myname to user command "hello" message "world"]]
+  set command [::see::command $msg]
+  set from [::see::from $msg]
+  if {$from eq "user"} {
+    if        {$command eq "speak" } { return [::client::format hello intro [::see::message $msg]]
+    } elseif  {$command eq "die"   } { puts "farewell"; ::client::die
+    } else    { return [::client::format world hello user] }
+  } else {
+    if        {$command eq "intro" } { return [::client::format hello intro $from]
+    } else    { return [::client::format world hello user] }
+  }
 }
+
+proc ::client::format {{msg ""} {cmd ""} {to ""}} {
+  if {$msg ne "" && $cmd ne "" && $to ne ""} {return [list [list from $::myname to $to  command $cmd message $msg when [clock milliseconds]]]
+  } elseif {$msg ne "" && $cmd ne ""} {       return [list [list from $::myname to user command $cmd message $msg when [clock milliseconds]]]
+  } elseif {$msg ne "" && $to ne ""} {        return [list [list from $::myname to $to               message $msg when [clock milliseconds]]]
+  } elseif {$cmd ne "" && $to ne ""} {        return [list [list from $::myname to $to  command $cmd              when [clock milliseconds]]]
+  } elseif {$msg ne ""} {                     return [list [list from $::myname to user              message $msg when [clock milliseconds]]]
+  } elseif {$cmd ne ""} {                     return [list [list from $::myname to user command $cmd              when [clock milliseconds]]]
+  } else {                                    return ""
+  }
+}
+
+proc ::client::die {} {
+  exit
+}
+
 
 
 ############################################################################

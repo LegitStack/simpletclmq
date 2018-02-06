@@ -21,7 +21,11 @@ proc ::user::run {} {
     set input [::user::helpers::getInput]
 
     if {[::see::contents $input] eq ""} {
-      set input [list from user to server command [lindex $input 0] message [lrange $input 1 end]]
+      if {[llength $input] > 2} {
+        set input [list from user to [lindex $input 0] command [lindex $input 1] message [lrange $input 2 end]]
+      } else {
+        set input [list from user to server command [lindex $input 0] message [lrange $input 1 end]]
+      }
     }
     if {$input eq "from user to server command help message {}"  ||
         $input eq "from user to server command ? message {}"     ||

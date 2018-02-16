@@ -78,7 +78,7 @@ proc ::server::handle::user chan {
 		puts [lindex [dict get $::clients $to] 0] $msg
 	}
 	puts "SENDING: $chan message received"
-	puts $chan "What would you like to say?"
+	#puts $chan "What would you like to say?"
 	puts done
 }
 
